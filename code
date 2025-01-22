@@ -1,0 +1,235 @@
+➢Creating database for the bank named HITA_BANK: Code: create database hita_bank; 
+
+➢Selecting the database: 
+Code: use hita_bank; 
+
+➢Creating table for storing data of account holders in the bank: 
+1)Table name: busers 
+Code: create table busers (Account_Number int(10) primary key,Account_Holders_Name varchar(50)not null,DOB date not null,Age int not null check 
+(Age>=18),Account_Type varchar(20) not null default ‘Savings Account’,Adhar_Number int(10) not null,Address varchar(100) not null,Branch_Name varchar(50) not null,Branch_Code int(6) not null,Acc_Functioning varchar(1) not null);  
+ 
+2)Table name: Login 
+Code: create table login(Username varchar(50) primary key, Password varchar(15) not null,Account_Number int(10) references busers(Account_Number)); 
+
+ 
+3)Table Name: card_det 
+Code: create table card_det(Account_Number int(10) references busers(Account_Number),Debit_Card_Number int(10) primary key,Debit_Card_Validity date,Credit_Card_Number int(10) unique,Credit_Card_Validity date,Debit_Card_Pin int(4) not null,Credit_Card_Pin int(4) not null); 
+
+ 
+4)Table Name: balance 
+Code: create table balance(Account_Number int(10) primary key,Ammount decimal(11,2) not null); 
+
+ 
+5)Table Name: tran_his 
+Code: create table tran_his (account_number int(10) references busers(Account_Number),token_id int(10) primary key,tran_his varchar(1000)); 
+
+ 
+➢Adding another column in busers 
+Code: alter table busers add Acc_Open_Date date not null;
+ 
+ 
+➢Structure of all tables 
+Code: desc <table name>; 
+
+  
+➢Inserting few records: 
+Code : insert into <table name> 
+          Values (record1),(record2)…; 
+ 
+➢To display all records: 
+Code: select * from <table name>; 
+ 
+ 
+ 
+  
+  
+  
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+Python program to perform different 
+functions of the bank 
+ Program: 
+ 
+# cs project import random import mysql.connector as sql import datetime  
+# functions def newuser():           
+bank = sql.connect(host='localhost',         user='root’,passwd='2357',         database='hita_bank') 
+    bm = bank.cursor()     bm.execute('select Account_Number                  from busers')     accno = random.randint(1000000000,                              2147483647)     while (accno,) in bm: 
+        accno = random.randint                 (1000000000,2147483647) name = input('Enter your name: ')     dob = input('Enter date of birth                   (yyyy-mm-dd): ')     age = int(input('Age:'))     acctype = input('Enter account type:  
+                 ')     adno = int(input("Enter adhar number:  
+              ")) 
+    add = input('Enter address: ')     branch = input("Enter branch name: ")     b_code = int(input("Enter branch                code: "))     acc_date = str(datetime.date.today())     phno = input('Enter phone number: ')     value = (accno, name, dob, age,               acctype, adno,add, branch,               b_code, 'Y', acc_date, phno)     return value 
+  def insbusers(k): 
+    bank = sql.connect(host='localhost',             user='root', passwd='2357',              database='hita_bank')     bm = bank.cursor()     bm.execute('insert into busers values               (%s,%s,%s,%s,%s,%s,%s,%s,                  %s,%s,%s,%s)', k)     bm.execute('insert into balance                  values (%s,%s)', (k[0],    
+                0.00)) 
+    bm.execute('select token_id from                  tran_his')     ti = random.randint           (1000000000,2147483647)     while ti in bm: 
+        ti = random.randint              (1000000000,2147483647)     bm.execute('insert into tran_his                  values(%s,%s,null)',                  (k[0], ti))     bank.commit()     print('Account opened succesfully!')     print(f'Your account number is:  
+          {k[0]}')     return 
+  def username(accno): 
+    bank = sql.connect(host='localhost',             user='root', passwd='2357',  
+database='hita_bank') 
+cr = bank.cursor() 
+    ch = int(input("1 to create new   userid and password\n2 to change   username : ")) 
+    if ch == 1: 
+        query = 'insert into login values  
+                 (%s,%s,%s)'         user = input('Enter username: ')         pwd = input('Enter password: ')         phn = input('Enter your                       registered phone                       number: ')         cr.execute('select phone_number                      from busers where                      account_number=%s',    
+                    (accno,))         for i in cr: 
+            l=i         if phn in l: 
+            cr.execute('select username                          from login')             if user not in cr: 
+                cr.execute(query,(user,                             pwd, accno))                 print("Username and                         password updated                         successfully!!")                 bank.commit()                 return             else: 
+                print("Username not                         available. Try                         again!!")                 return         else: 
+            print("Phone number does not                     match. Try again!!")             return     elif ch == 2: 
+        query = 'update login set                   username= %s where                   account_number=%s'         user = input('Enter new username:  
+                     ') 
+        pwd = input('Enter your current                       password: ')         cr.execute('select password from                      login where                      account_number=%s',  
+                    (accno,))         for i in cr:             l1=i         cr.execute('select username from                      login where                      account_number=%s',  
+                    (accno,))         for i in cr:             l2=i         if pwd in l1 and user not in l2 :             cr.execute(query, (user,                         accno))             print("Username updated                     successfully!!")             bank.commit()             return         else: 
+            print('Wrong password or                     Invalid Username. Try                     again!!')             return     else: 
+        print('Wrong choise. Try                 again!!')         return 
+  def card(accno): 
+    bank = sql.connect(host='localhost',             user='root', passwd='2357',             database='hita_bank')     cr = bank.cursor()     cr.execute('select account_number                  from busers')     if (accno,) in cr: 
+        cr.reset()         cr.execute('select account_number                      from card_det')
+         if (accno,) not in cr:             db = random.randint                  (100000000,999999999)             cr.execute('select  
+                        Debit_Card_Number                           from card_det')
+             while (db,) in cr: 
+                db = random.randint                      (100000000,999999999)             cb = random.randint 
+                    (100000000,999999999)             cr.execute('select  
+                       Credit_Card_Number                         from card_det')             while (cb,) in cr: 
+                cb = random.randint                      (10000000,999999999)             cr.execute('insert into                          card_det values  
+                        (%s,%s,%s,%s,%s,                             %s,%s)',(accno,                             db, '2025-08-                          10', cb, '2025- 
+                         08-10', 1234,                           1234))             print(f"Cards issued                    successfully!!\nCredit  
+                  Card Number:   
+                 {cb}\nDebit Card Number:                   {db}\n1234 is the                    default pin. Kindly                    change it by                     yourself.!!")             bank.commit()             return
+         else: 
+            print("Cards are already                     issued!!")             return
+     else: 
+        print('Account does not exist!') return 
+  def cpsw(accno): 
+    bank = sql.connect(host='localhost',             user='root', passwd='2357',             database='hita_bank')     cr = bank.cursor()     cpass = input("Enter current                     password: ")     cr.execute('select password from                  login where                                 account_number =%s',  
+                (accno,))
+     if (cpass,) in cr: 
+        npass = input("Enter new                         password: ")         cr.execute('update login set                      password=%s where                      account_number=%s',                     (npass, accno))         print("Password changed                 successfully!!")         bank.commit()
+         return     else: 
+print('Wrong password!!Try  
+               again')         return 
+ 
+ def dpin(accno): 
+    bank = sql.connect(host='localhost',              user='root', passwd='2357',             database='hita_bank')     cr = bank.cursor()     pin = int(input("Enter your current                       debitcard pin: "))     cr.execute('select Debit_Card_Pin
+                  from card_det where                    account_number=%s',     
+                (accno,))     
+if (pin,) in cr:
+         pin = int(input("Enter new pin:  
+                   ")) 
+        cr.execute("update card_det set                      Debit_Card_Pin=%s                      where account_number                      =%s", (pin, accno))         print("PIN updated                 successfully!!") bank.commit() 
+        return     else: 
+        print("Wrong pin entered!! Try                 again")         return 
+  def cpin(accno): 
+    bank = sql.connect(host='localhost',             user='root', passwd='2357',             database='hita_bank')     cr = bank.cursor()     pin = int(input("Enter your current                       creditcard pin: "))     cr.execute('select Credit_Card_Pin                  from card_det where                  account_number                  =%s',(accno,))     if (pin,) in cr:         pin = int(input("Enter new pin:  
+                ")) 
+        cr.execute("update card_det set                      Credit_Card_Number=%s                      where account_number                      =%s", (pin, accno)) print("PIN updated     
+               successfully!!")         bank.commit()         return     else: 
+        print("Wrong pin entered!! Try                 again")         return 
+  def tran_his(accno, amt, ac): 
+    bank = sql.connect(host='localhost',             user='root', passwd='2357',             database='hita_bank')     cr = bank.cursor()     if ac == 1: 
+        st = f'{amt} deposited'     elif ac == 2: 
+        st = f'{amt} withdrawn'     cr.execute('select tran_his from tran_his where                  account_number =%s',                  (accno,))
+               for i in cr: 
+        l=i     st1 = str(l[0]) + st     cr.execute('update tran_his set                  tran_his=%s where                  account_number=%s', (st1,                  accno))     bank.commit()     return 
+  def deposit(accno): 
+    bank = sql.connect(host='localhost',             user='root', passwd='2357',             database='hita_bank')     cr = bank.cursor()     dep = float(input('Enter the ammount                         to be deposited: 
+                         '))     pin = int(input("Enter your debit                       card pin: "))     cr.execute('select debit_card_pin                  from card_det where                  account_number=%s',(                  accno,))     if (pin,) in cr: 
+        cr.execute('update balance set                      ammount=ammount+%s                       where account                      _number=%s', (dep,                      accno))         print('Money deposited                  successfully!')         tran_his(accno,dep, 1)         bank.commit()         return     print('Wrong pin!')     return 
+  def withdraw(accno): 
+    bank = sql.connect(host='localhost',              user='root', passwd='2357',             database='hita_bank')     cr = bank.cursor()     amt = float(input('Enter the ammount                      to be withdrawn:  '))     pin = int(input("Enter your debit                       card pin: "))     cr.execute('select debit_card_pin                  from card_det where                  account_number=%s',(                  accno,))     if (pin,) in cr: 
+        cr.execute('select ammount from                      balance where                      account_number=%s',  
+                    (accno,))         for i in cr: 
+            l=i         if amt <= l[0]: 
+            cr.execute('update balance                          set ammount=                          ammount-%s                          where account                           _number=%s',                          (amt, accno))             cr.execute('select ammount                          from balance                          where account                          _number= %s  
+                        ',(accno,))             for i in cr:                 l=i[0]             print(f"Ammount succesfully                      withdrawn!\nCurrent                      balance={l}")             tran_his(accno, amt, 2)             bank.commit()             return         else: 
+            print('Insuficient balance in                     account!')             return     else: 
+        print('Wrong pin!')         return 
+  def acstat(accno, user, pwd): 
+    bank = sql.connect(host='localhost',             user='root', passwd='2357',             database='hita_bank')     cr = bank.cursor()     cr.execute('select account_number                  from busers')     l=[]     for i in cr: 
+        l.append(i)     cr.execute('select username from                  login where                  account_number                  =%s',(accno,))     for j in cr: 
+        m=j     cr.execute( 'select password from                   login where                   account_number                   =%s',(accno,))     for k in cr: 
+        n=k     if ((accno,) in l)  and ((user,) ==                    m)  and ((pwd,)== n ):         dat = str(datetime.date.today())         cr.execute('select                      account_holders_name                      from busers where                      account_number=%s',  
+                    (accno,))         for a in cr:             name=a[0]         cr.execute('select dob from                      busers where                      account_number=%s',  
+                    (accno,))         for b in cr:             dob = b[0]         cr.execute('select account_type                      from busers where                      account_number=%s',    
+                    (accno,))         for c in cr: 
+            actype = c[0]         cr.execute('select adhar_number                      from busers where  
+                    account_number=%s',           
+                   (accno,))         for d in cr:             adr = d[0]         cr.execute('select address from                busers where                account_number=%s',  
+              (accno,))         for e in cr:             add = e[0]         cr.execute('select branch_name                      from busers where                      account_number=%s',  
+                    (accno,))         for f in cr: 
+            brname = f[0]         cr.execute('select branch_code                      from busers where                      account_number=%s',  
+                    (accno,))         for g in cr: 
+            bcode = g[0]         cr.execute('select phone_number                      from busers where                      account_number=%s',                      (accno,))         for h in cr:             phno = h[0]         cr.execute('select credit_                        card_number from card                       _det where account                          _number=%s', (accno  
+                    ,))         for i in cr:             ccard = i[0]         cr.execute('select                      debit_card_number                      from card_det where                      account_number=%s',  
+                    (accno,))         for j in cr:             dcard = j[0]         cr.execute('select tran_his from                       tran_his where                      account_number=%s',  
+                    (accno,))         for k in cr: 
+    trhistory =k[0] 
+print(p)         return     else: 
+        print('Wrong credentials! Try  again!!') 
+        return 
+  def help(): 
+    h = '''Enter 1 to open new bank          account 
+2To create username and                            password or to   change username     
+3to apply for cards                     (credit/debit)- For                       first time users who                        have just opened                      account 
+4to change password                  5 to change debit card                        pin 
+6to change credit card                     pin 
+7to deposit money 
+8to withdraw  money                  9 to print account      
+   statement 
+10for help 
+11to exit'''     print(h)     return 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ # __main__ 
+dat = str(datetime.date.today()) 
+
+ print(p) help() while True: 
+    ch = int(input("Enter choice: "))     if ch == 1: 
+        age = int(input("Enter age: "))         if age >= 18:             k = newuser()             insbusers(k)         else: 
+            print("Under age!! Try again: ")     elif ch == 2: 
+        accno = int(input("Enter account                             number: "))         username(accno)     elif ch == 3: 
+        accno = int(input("Enter account                             number: "))         card(accno)     elif ch == 4: 
+        accno = int(input("Enter account                             number: "))         cpsw(accno)     elif ch == 5: 
+        accno = int(input("Enter account                             number: "))         dpin(accno)     elif ch == 6: 
+        accno = int(input("Enter account                             number: "))         cpin(accno)     elif ch == 7: 
+        accno = int(input("Enter account                             number: "))         deposit(accno)     elif ch == 8: 
+        accno = int(input("Enter account                             number: "))         withdraw(accno)     elif ch == 9: 
+        accno = int(input("Enter account                             number: "))         user = input("Enter username: ")         pwd = input("Enter password: ")         acstat(accno, user, pwd)     elif ch == 10:         help()     elif ch == 11: 
+        print("Thanks for coming! Have a nice                 day ahead!")         break     else: 
+        print("Wrong Choice!") 
